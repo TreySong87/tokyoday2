@@ -15,9 +15,6 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
     <!-- Custom Font (Noto Sans KR) -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     
@@ -31,30 +28,71 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
         
-        // Lucide 아이콘 컴포넌트 래퍼
-        const Icon = ({ name, size = 24, className = "" }) => {
-            const iconName = name.charAt(0).toLowerCase() + name.slice(1);
-            return <i data-lucide={iconName} width={size} height={size} className={className}></i>;
+        // 아이콘을 직접 정의 (오류 방지)
+        const Icons = {
+            MapPin: (props) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" />
+                </svg>
+            ),
+            Coffee: (props) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                    <path d="M17 8h1a4 4 0 1 1 0 8h-1" /><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" /><line x1="6" x2="6" y1="2" y2="4" /><line x1="10" x2="10" y1="2" y2="4" /><line x1="14" x2="14" y1="2" y2="4" />
+                </svg>
+            ),
+            Camera: (props) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" />
+                </svg>
+            ),
+            Utensils: (props) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" /><path d="M7 2v20" /><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+                </svg>
+            ),
+            Music: (props) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                    <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
+                </svg>
+            ),
+            ChevronDown: (props) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                    <path d="m6 9 6 6 6-6" />
+                </svg>
+            ),
+            ChevronUp: (props) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                    <path d="m18 15-6-6-6 6" />
+                </svg>
+            ),
+            Heart: (props) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                </svg>
+            )
         };
 
         // 일정 카드 컴포넌트
-        const ScheduleCard = ({ time, title, iconName, children, isHighlight = false }) => (
-            <div className={`relative pl-8 pb-8 border-l-2 ${isHighlight ? 'border-pink-400' : 'border-gray-200'} last:border-l-0`}>
-                <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full ${isHighlight ? 'bg-pink-500 ring-4 ring-pink-100' : 'bg-gray-300'}`} />
-                <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-md font-mono">{time}</span>
-                    <h3 className={`text-lg font-bold ${isHighlight ? 'text-pink-600' : 'text-gray-800'}`}>{title}</h3>
-                    {iconName && <Icon name={iconName} size={18} className={isHighlight ? 'text-pink-500' : 'text-gray-400'} />}
+        const ScheduleCard = ({ time, title, iconName, children, isHighlight = false }) => {
+            const IconComponent = Icons[iconName];
+            return (
+                <div className={`relative pl-8 pb-8 border-l-2 ${isHighlight ? 'border-pink-400' : 'border-gray-200'} last:border-l-0`}>
+                    <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full ${isHighlight ? 'bg-pink-500 ring-4 ring-pink-100' : 'bg-gray-300'}`} />
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-md font-mono">{time}</span>
+                        <h3 className={`text-lg font-bold ${isHighlight ? 'text-pink-600' : 'text-gray-800'}`}>{title}</h3>
+                        {IconComponent && <IconComponent className={isHighlight ? 'text-pink-500' : 'text-gray-400'} size={18} />}
+                    </div>
+                    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                        {children}
+                    </div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                    {children}
-                </div>
-            </div>
-        );
+            );
+        };
 
-        // 상세 정보 카드 컴포넌트 (맛집용)
+        // 상세 정보 카드 컴포넌트
         const DetailCard = ({ image, name, desc, point, link }) => (
             <div className="mb-6 last:mb-0 bg-gray-50 rounded-xl p-3 border border-gray-200">
                 <img 
@@ -74,20 +112,13 @@
                     rel="noreferrer"
                     className="flex items-center justify-center w-full py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-100 transition-colors"
                 >
-                    <Icon name="mapPin" size={16} className="mr-1 text-red-500" /> 구글지도 보기
+                    <Icons.MapPin size={16} className="mr-1 text-red-500" /> 구글지도 보기
                 </a>
             </div>
         );
 
         const App = () => {
             const [showDinnerOptions, setShowDinnerOptions] = useState(true);
-
-            // 아이콘 렌더링을 위한 useEffect
-            useEffect(() => {
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
-            }, [showDinnerOptions]); // 상태 변경 시 아이콘 다시 그리기
 
             return (
                 <div className="max-w-md mx-auto bg-gray-50 min-h-screen font-sans pb-20 shadow-xl">
@@ -100,7 +131,7 @@
                                 <p className="text-indigo-200 text-sm mt-1">m-flo 25th Concert Day 🎵</p>
                             </div>
                             <div className="bg-white/20 p-2 rounded-full backdrop-blur-sm">
-                                <Icon name="heart" className="text-pink-300 fill-pink-300" />
+                                <Icons.Heart className="text-pink-300 fill-pink-300" />
                             </div>
                         </div>
                     </header>
@@ -109,7 +140,7 @@
                     <div className="p-6 mt-2">
                         
                         {/* 1. 기상 및 아침 */}
-                        <ScheduleCard time="10:00 - 12:00" title="기상 & 브런치" iconName="coffee" isHighlight={true}>
+                        <ScheduleCard time="10:00 - 12:00" title="기상 & 브런치" iconName="Coffee" isHighlight={true}>
                             <div className="mb-3">
                                 <img 
                                     src="https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&q=80&w=400&h=200" 
@@ -127,13 +158,13 @@
                                     rel="noreferrer"
                                     className="flex items-center justify-center w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-indigo-700 transition-colors"
                                 >
-                                    <Icon name="mapPin" size={16} className="mr-1" /> 구글지도 보기
+                                    <Icons.MapPin size={16} className="mr-1" /> 구글지도 보기
                                 </a>
                             </div>
                         </ScheduleCard>
 
                         {/* 2. 도쿄타워 */}
-                        <ScheduleCard time="12:00 - 14:00" title="도쿄타워 & 시바공원" iconName="camera">
+                        <ScheduleCard time="12:00 - 14:00" title="도쿄타워 & 시바공원" iconName="Camera">
                             <ul className="text-sm text-gray-600 space-y-2">
                                 <li className="flex items-start">
                                     <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-1.5 mr-2 shrink-0" />
@@ -147,7 +178,7 @@
                         </ScheduleCard>
 
                         {/* 3. 긴자 이동 & 쇼핑 */}
-                        <ScheduleCard time="14:00 - 16:00" title="긴자 이동 & 쇼핑/카페" iconName="coffee">
+                        <ScheduleCard time="14:00 - 16:00" title="긴자 이동 & 쇼핑/카페" iconName="Coffee">
                             <div className="bg-white rounded-lg border border-gray-100 p-3 mb-2">
                                 <p className="text-sm font-bold text-gray-800 mb-2">🛍️ 쇼핑 스팟</p>
                                 <ul className="text-sm text-gray-600 space-y-3">
@@ -167,14 +198,14 @@
                         </ScheduleCard>
 
                         {/* 4. 점심/저녁 (선택) */}
-                        <ScheduleCard time="16:00 - 17:00" title="든든한 식사 (메뉴 선택)" iconName="utensils" isHighlight={true}>
+                        <ScheduleCard time="16:00 - 17:00" title="든든한 식사 (메뉴 선택)" iconName="Utensils" isHighlight={true}>
                             <div className="flex justify-between items-center mb-4">
                                 <p className="text-xs text-pink-600 font-bold">*공연 전 든든하게! (4곳 중 선택)</p>
                                 <button 
                                     onClick={() => setShowDinnerOptions(!showDinnerOptions)}
                                     className="text-gray-400 hover:text-gray-600 bg-gray-100 p-1 rounded-full flex items-center justify-center"
                                 >
-                                    <Icon name={showDinnerOptions ? "chevronUp" : "chevronDown"} size={20} />
+                                    {showDinnerOptions ? <Icons.ChevronUp size={20} /> : <Icons.ChevronDown size={20} />}
                                 </button>
                             </div>
                             
@@ -209,9 +240,9 @@
                         </ScheduleCard>
 
                         {/* 5. 공연장 이동 */}
-                        <ScheduleCard time="17:00 - 18:00" title="공연장 이동" iconName="mapPin">
+                        <ScheduleCard time="17:00 - 18:00" title="공연장 이동" iconName="MapPin">
                             <div className="bg-indigo-50 p-4 rounded-xl text-sm text-indigo-900 border border-indigo-100">
-                                <p className="font-bold flex items-center mb-2 text-lg"><Icon name="mapPin" size={18} className="mr-2 text-indigo-600"/> 긴자 → 아리아케 가든</p>
+                                <p className="font-bold flex items-center mb-2 text-lg"><Icons.MapPin size={18} className="mr-2 text-indigo-600"/> 긴자 → 아리아케 가든</p>
                                 <div className="space-y-2 bg-white/50 p-3 rounded-lg">
                                     <p className="flex items-center"><span className="bg-indigo-600 text-white px-2 py-0.5 rounded text-xs mr-2">탑승</span> <strong>[都05-2] 버스</strong> (환승 X)</p>
                                     <p className="text-xs text-gray-600 pl-8">긴자 4초메 정류장 탑승 → 아리아케 가든 하차</p>
@@ -221,7 +252,7 @@
                         </ScheduleCard>
 
                         {/* 6. 공연 관람 */}
-                        <ScheduleCard time="18:00 - 21:00" title="m-flo 25th LIVE" iconName="music" isHighlight={true}>
+                        <ScheduleCard time="18:00 - 21:00" title="m-flo 25th LIVE" iconName="Music" isHighlight={true}>
                             <div className="text-center bg-gray-900 text-white p-6 rounded-xl shadow-lg relative overflow-hidden group">
                                 <div className="absolute inset-0 bg-gradient-to-br from-pink-600/20 to-purple-600/20 group-hover:opacity-100 transition-opacity"></div>
                                 <h4 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 mb-2">SUPERLIMINAL</h4>
@@ -234,7 +265,7 @@
                         </ScheduleCard>
 
                         {/* 7. 뒷풀이 */}
-                        <ScheduleCard time="22:00 ~" title="뒷풀이 (시부야)" iconName="coffee">
+                        <ScheduleCard time="22:00 ~" title="뒷풀이 (시부야)" iconName="Coffee">
                             <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
                                 <h4 className="font-bold text-orange-900 mb-2 flex items-center">🚕 시부야로 이동</h4>
                                 <p className="text-sm text-orange-800 leading-relaxed">
