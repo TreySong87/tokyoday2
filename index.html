@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도쿄 여행 2일차 - m-flo 공연</title>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Custom Font (Noto Sans KR) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .animation-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        // Lucide 아이콘 컴포넌트 래퍼
+        const Icon = ({ name, size = 24, className = "" }) => {
+            const iconName = name.charAt(0).toLowerCase() + name.slice(1);
+            return <i data-lucide={iconName} width={size} height={size} className={className}></i>;
+        };
+
+        // 일정 카드 컴포넌트
+        const ScheduleCard = ({ time, title, iconName, children, isHighlight = false }) => (
+            <div className={`relative pl-8 pb-8 border-l-2 ${isHighlight ? 'border-pink-400' : 'border-gray-200'} last:border-l-0`}>
+                <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full ${isHighlight ? 'bg-pink-500 ring-4 ring-pink-100' : 'bg-gray-300'}`} />
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-md font-mono">{time}</span>
+                    <h3 className={`text-lg font-bold ${isHighlight ? 'text-pink-600' : 'text-gray-800'}`}>{title}</h3>
+                    {iconName && <Icon name={iconName} size={18} className={isHighlight ? 'text-pink-500' : 'text-gray-400'} />}
+                </div>
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                    {children}
+                </div>
+            </div>
+        );
+
+        // 상세 정보 카드 컴포넌트 (맛집용)
+        const DetailCard = ({ image, name, desc, point, link }) => (
+            <div className="mb-6 last:mb-0 bg-gray-50 rounded-xl p-3 border border-gray-200">
+                <img 
+                    src={image} 
+                    alt={name} 
+                    className="w-full h-32 object-cover rounded-lg mb-3 shadow-sm"
+                    onError={(e) => {e.target.src = 'https://via.placeholder.com/600x300?text=No+Image'}}
+                />
+                <h4 className="text-lg font-bold text-gray-800 mb-1">{name}</h4>
+                <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                    <span className="bg-pink-100 text-pink-800 px-1.5 py-0.5 rounded mr-1 text-xs font-bold">Point</span>
+                    {point}
+                </p>
+                <a 
+                    href={link} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="flex items-center justify-center w-full py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-100 transition-colors"
+                >
+                    <Icon name="mapPin" size={16} className="mr-1 text-red-500" /> 구글지도 보기
+                </a>
+            </div>
+        );
+
+        const App = () => {
+            const [showDinnerOptions, setShowDinnerOptions] = useState(true);
+
+            // 아이콘 렌더링을 위한 useEffect
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, [showDinnerOptions]); // 상태 변경 시 아이콘 다시 그리기
+
+            return (
+                <div className="max-w-md mx-auto bg-gray-50 min-h-screen font-sans pb-20 shadow-xl">
+                    {/* Header */}
+                    <header className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-b-3xl shadow-lg sticky top-0 z-10">
+                        <div className="flex justify-between items-end">
+                            <div>
+                                <p className="text-indigo-100 text-sm font-medium mb-1">Tokyo Trip Day 2</p>
+                                <h1 className="text-3xl font-bold">2/19 (목)</h1>
+                                <p className="text-indigo-200 text-sm mt-1">m-flo 25th Concert Day 🎵</p>
+                            </div>
+                            <div className="bg-white/20 p-2 rounded-full backdrop-blur-sm">
+                                <Icon name="heart" className="text-pink-300 fill-pink-300" />
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Timeline */}
+                    <div className="p-6 mt-2">
+                        
+                        {/* 1. 기상 및 아침 */}
+                        <ScheduleCard time="10:00 - 12:00" title="기상 & 브런치" iconName="coffee" isHighlight={true}>
+                            <div className="mb-3">
+                                <img 
+                                    src="https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&q=80&w=400&h=200" 
+                                    alt="French Toast" 
+                                    className="w-full h-32 object-cover rounded-lg mb-3"
+                                />
+                                <h4 className="text-xl font-bold text-gray-800 mb-1">Cafe Aaliya (카페 알리야)</h4>
+                                <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                                    <span className="bg-yellow-100 text-yellow-800 px-1 rounded mr-1 font-bold">Point</span>
+                                    인생 프렌치 토스트! 겉은 바삭하고 속은 푸딩처럼 녹아내리는 극강의 부드러움. 무겁지 않고 달콤하게 하루를 시작하기 딱 좋아 🥞
+                                </p>
+                                <a 
+                                    href="https://www.google.com/maps/place/Cafe+Aaliya/@35.690497,139.7047727,17z/data=!3m1!4b1!4m6!3m5!1s0x60188cdb110f51e5:0x1a011438f4c23010!8m2!3d35.690497!4d139.7047727!16s%2Fg%2F11b778q5jl?entry=ttu&g_ep=EgoyMDI2MDEyNS4wIKXMDSoASAFQAw%3D%3D" 
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="flex items-center justify-center w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-indigo-700 transition-colors"
+                                >
+                                    <Icon name="mapPin" size={16} className="mr-1" /> 구글지도 보기
+                                </a>
+                            </div>
+                        </ScheduleCard>
+
+                        {/* 2. 도쿄타워 */}
+                        <ScheduleCard time="12:00 - 14:00" title="도쿄타워 & 시바공원" iconName="camera">
+                            <ul className="text-sm text-gray-600 space-y-2">
+                                <li className="flex items-start">
+                                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-1.5 mr-2 shrink-0" />
+                                    <span>🗼 <strong>도쿄타워 뷰 스팟:</strong> 시바공원에서 산책하며 인생샷 남기기</span>
+                                </li>
+                                <li className="flex items-start">
+                                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-1.5 mr-2 shrink-0" />
+                                    <span>📸 빨간 타워 배경으로 여유롭게 사진 촬영</span>
+                                </li>
+                            </ul>
+                        </ScheduleCard>
+
+                        {/* 3. 긴자 이동 & 쇼핑 */}
+                        <ScheduleCard time="14:00 - 16:00" title="긴자 이동 & 쇼핑/카페" iconName="coffee">
+                            <div className="bg-white rounded-lg border border-gray-100 p-3 mb-2">
+                                <p className="text-sm font-bold text-gray-800 mb-2">🛍️ 쇼핑 스팟</p>
+                                <ul className="text-sm text-gray-600 space-y-3">
+                                    <li className="flex flex-col">
+                                        <span className="font-bold text-indigo-900">• 긴자 식스 (GINZA SIX)</span>
+                                        <span className="text-xs text-gray-500 pl-2">긴자 최대 쇼핑몰, 옥상 정원과 츠타야 서점이 예뻐!</span>
+                                    </li>
+                                    <li className="flex flex-col">
+                                        <span className="font-bold text-indigo-900">• 도버 스트리트 마켓 긴자</span>
+                                        <span className="text-xs text-gray-500 pl-2">꼼데가르송 등 힙한 브랜드가 모여있는 패션 성지.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-2 text-center bg-gray-100 p-2 rounded">
+                                ☕ 쇼핑 중간에 마음에 드는 카페에서 잠시 휴식 (현장 선택)
+                            </p>
+                        </ScheduleCard>
+
+                        {/* 4. 점심/저녁 (선택) */}
+                        <ScheduleCard time="16:00 - 17:00" title="든든한 식사 (메뉴 선택)" iconName="utensils" isHighlight={true}>
+                            <div className="flex justify-between items-center mb-4">
+                                <p className="text-xs text-pink-600 font-bold">*공연 전 든든하게! (4곳 중 선택)</p>
+                                <button 
+                                    onClick={() => setShowDinnerOptions(!showDinnerOptions)}
+                                    className="text-gray-400 hover:text-gray-600 bg-gray-100 p-1 rounded-full flex items-center justify-center"
+                                >
+                                    <Icon name={showDinnerOptions ? "chevronUp" : "chevronDown"} size={20} />
+                                </button>
+                            </div>
+                            
+                            {showDinnerOptions && (
+                                <div className="space-y-4 animation-fade-in">
+                                    <DetailCard 
+                                        name="[라멘] 무기토 올리브 긴자점"
+                                        image="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&q=80&w=600&h=300"
+                                        point="미슐랭 빕구르망 선정! 조개+닭+멸치 육수의 감칠맛이 폭발하는 아주 깔끔한 소유 라멘."
+                                        link="https://www.google.com/maps/search/?api=1&query=Mugi+to+Olive+Ginza"
+                                    />
+                                    <DetailCard 
+                                        name="[장어] 치쿠요테이 긴자점"
+                                        image="https://images.unsplash.com/photo-1580442151529-343f2f6e0e27?auto=format&fit=crop&q=80&w=600&h=300"
+                                        point="에도 시대부터 이어진 노포. 입에 넣자마자 살살 녹아 없어지는 극강의 부드러운 장어덮밥."
+                                        link="https://www.google.com/maps/search/?api=1&query=Chikuyotei+Ginza"
+                                    />
+                                    <DetailCard 
+                                        name="[돈카츠] 긴자 돈카츠 사이토"
+                                        image="https://images.unsplash.com/photo-1599599810769-bcde5a1645b7?auto=format&fit=crop&q=80&w=600&h=300"
+                                        point="저온 튀김 기술로 만든 육즙 가득 프리미엄 카츠. 소금에 찍어 먹으면 고기 본연의 단맛이 일품!"
+                                        link="https://www.google.com/maps/search/?api=1&query=Ginza+Tonkatsu+Saito"
+                                    />
+                                    <DetailCard 
+                                        name="[텐동] 가네코 한노스케"
+                                        image="https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&q=80&w=600&h=300"
+                                        point="도쿄 텐동 랭킹 1위. 붕장어 한 마리가 통째로 올라가는 압도적 비주얼과 특제 소스의 조화."
+                                        link="https://www.google.com/maps/search/?api=1&query=Kaneko+Hannosuke+Ginza"
+                                    />
+                                </div>
+                            )}
+                        </ScheduleCard>
+
+                        {/* 5. 공연장 이동 */}
+                        <ScheduleCard time="17:00 - 18:00" title="공연장 이동" iconName="mapPin">
+                            <div className="bg-indigo-50 p-4 rounded-xl text-sm text-indigo-900 border border-indigo-100">
+                                <p className="font-bold flex items-center mb-2 text-lg"><Icon name="mapPin" size={18} className="mr-2 text-indigo-600"/> 긴자 → 아리아케 가든</p>
+                                <div className="space-y-2 bg-white/50 p-3 rounded-lg">
+                                    <p className="flex items-center"><span className="bg-indigo-600 text-white px-2 py-0.5 rounded text-xs mr-2">탑승</span> <strong>[都05-2] 버스</strong> (환승 X)</p>
+                                    <p className="text-xs text-gray-600 pl-8">긴자 4초메 정류장 탑승 → 아리아케 가든 하차</p>
+                                    <p className="flex items-center"><span className="bg-gray-400 text-white px-2 py-0.5 rounded text-xs mr-2">시간</span> 약 25~30분 소요 (앉아서 이동)</p>
+                                </div>
+                            </div>
+                        </ScheduleCard>
+
+                        {/* 6. 공연 관람 */}
+                        <ScheduleCard time="18:00 - 21:00" title="m-flo 25th LIVE" iconName="music" isHighlight={true}>
+                            <div className="text-center bg-gray-900 text-white p-6 rounded-xl shadow-lg relative overflow-hidden group">
+                                <div className="absolute inset-0 bg-gradient-to-br from-pink-600/20 to-purple-600/20 group-hover:opacity-100 transition-opacity"></div>
+                                <h4 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 mb-2">SUPERLIMINAL</h4>
+                                <p className="text-sm text-gray-300 mb-4 font-medium tracking-wide">TOKYO GARDEN THEATER</p>
+                                <div className="flex justify-center gap-3">
+                                    <span className="text-xs border border-pink-500/50 text-pink-300 px-3 py-1 rounded-full bg-pink-500/10">S석</span>
+                                    <span className="text-xs border border-purple-500/50 text-purple-300 px-3 py-1 rounded-full bg-purple-500/10">19:00 시작</span>
+                                </div>
+                            </div>
+                        </ScheduleCard>
+
+                        {/* 7. 뒷풀이 */}
+                        <ScheduleCard time="22:00 ~" title="뒷풀이 (시부야)" iconName="coffee">
+                            <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                                <h4 className="font-bold text-orange-900 mb-2 flex items-center">🚕 시부야로 이동</h4>
+                                <p className="text-sm text-orange-800 leading-relaxed">
+                                    공연의 여운을 즐기며 가볍게 한 잔! 🍻<br/>
+                                    <span className="text-xs text-orange-600 mt-1 block">숙소 근처라 마음 편하게 마실 수 있어 :)</span>
+                                </p>
+                            </div>
+                        </ScheduleCard>
+
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
