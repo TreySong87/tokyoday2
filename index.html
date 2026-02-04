@@ -21,7 +21,13 @@
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; }
         .animation-fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .animation-scale-up { animation: scaleUp 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } } 
+        
+        /* 스크롤바 숨기기 (팝업 내부) */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -30,52 +36,150 @@
     <script type="text/babel">
         const { useState } = React;
         
-        // 아이콘을 직접 정의 (오류 방지)
+        // 아이콘 직접 정의
         const Icons = {
-            MapPin: (props) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" />
-                </svg>
-            ),
-            Coffee: (props) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-                    <path d="M17 8h1a4 4 0 1 1 0 8h-1" /><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" /><line x1="6" x2="6" y1="2" y2="4" /><line x1="10" x2="10" y1="2" y2="4" /><line x1="14" x2="14" y1="2" y2="4" />
-                </svg>
-            ),
-            Camera: (props) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" />
-                </svg>
-            ),
-            Utensils: (props) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-                    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" /><path d="M7 2v20" /><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
-                </svg>
-            ),
-            Music: (props) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-                    <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
-                </svg>
-            ),
-            ChevronDown: (props) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-                    <path d="m6 9 6 6 6-6" />
-                </svg>
-            ),
-            ChevronUp: (props) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-                    <path d="m18 15-6-6-6 6" />
-                </svg>
-            ),
-            Heart: (props) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                </svg>
-            )
+            MapPin: (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>),
+            Coffee: (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M17 8h1a4 4 0 1 1 0 8h-1" /><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" /><line x1="6" x2="6" y1="2" y2="4" /><line x1="10" x2="10" y1="2" y2="4" /><line x1="14" x2="14" y1="2" y2="4" /></svg>),
+            Camera: (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" /></svg>),
+            Utensils: (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" /><path d="M7 2v20" /><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" /></svg>),
+            Music: (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>),
+            ChevronDown: (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m6 9 6 6 6-6" /></svg>),
+            ChevronUp: (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m18 15-6-6-6 6" /></svg>),
+            Heart: (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>),
+            X: (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>),
+            Car: (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>),
+            Train: (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="16" height="16" x="4" y="3" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="m8 19-2 3"/><path d="m18 22-2-3"/><circle cx="8" cy="15" r="2"/><circle cx="16" cy="15" r="2"/></svg>),
+            Bus: (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="14" height="16" x="5" y="2" rx="2"/><path d="M8 22v-2"/><path d="M16 22v-2"/><path d="M4 10h16"/><circle cx="8" cy="16" r="2"/><circle cx="16" cy="16" r="2"/></svg>),
+            ArrowRight: (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>),
+            CheckCircle: (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>),
+            Navigation: (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polygon points="3 11 22 2 13 21 11 13 3 11" /></svg>)
         };
 
-        // 일정 카드 컴포넌트
-        const ScheduleCard = ({ time, title, iconName, children, isHighlight = false }) => {
+        // 팝업 모달 컴포넌트
+        const Modal = ({ isOpen, onClose, title, children }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animation-fade-in" onClick={onClose}></div>
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[85vh] flex flex-col relative z-10 animation-scale-up overflow-hidden">
+                        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 flex justify-between items-center shrink-0">
+                            <h3 className="font-bold text-lg">{title}</h3>
+                            <button onClick={onClose} className="bg-white/20 p-1 rounded-full hover:bg-white/30 transition">
+                                <Icons.X size={20} />
+                            </button>
+                        </div>
+                        <div className="p-4 overflow-y-auto no-scrollbar">
+                            {children}
+                        </div>
+                        <div className="p-3 bg-gray-50 border-t border-gray-100 text-center shrink-0">
+                            <button onClick={onClose} className="text-sm font-bold text-indigo-600 w-full py-2">
+                                확인 완료
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 2일차 이동 경로 데이터 (Route Data)
+        const routeData = {
+            brunch: {
+                title: "🏨 숙소 → 카페 알리야",
+                type: "choice",
+                taxi: {
+                    from: "호텔 앞 (히가시신주쿠)",
+                    to: "신주쿠 3초메 (카페 알리야)",
+                    time: "약 5~8분 (기본요금)",
+                    taxiText: "新宿三丁目の『ISETAN（伊勢丹）』近くまでお願いします。",
+                    taxiPron: "신주쿠 산초메노 이세탄 치카쿠 마데 오네가이시마스",
+                    taxiDesc: "신주쿠 3초메 이세탄 백화점 근처로 가주세요."
+                },
+                subway: {
+                    lineName: "후쿠토신선 (갈색 F)",
+                    from: "히가시신주쿠역 (F12)",
+                    to: "신주쿠3초메역 (F13)",
+                    exit: "A1 또는 A2 출구",
+                    time: "약 2분 (1정거장)",
+                    desc: "지하철이 매우 빠릅니다! 1정거장만 가면 도착.",
+                    stationGuide: "호텔 정문 나오자마자 오른쪽! 큰 사거리에 있는 지하철 입구(A1)로 들어가세요. 'Fukutoshin Line(갈색)' 표지판을 찾으세요."
+                }
+            },
+            tokyotower: {
+                title: "🗼 신주쿠 → 도쿄타워 (시바공원)",
+                type: "choice",
+                taxi: {
+                    from: "신주쿠",
+                    to: "시바공원 (프린스호텔 쪽)",
+                    time: "약 20~25분",
+                    taxiText: "芝公園の『プリンス芝公園』あたりまでお願いします。\n東京タワーが見える場所です。",
+                    taxiPron: "시바코엔노 푸린스 시바코엔 아타리 마데 오네가이시마스",
+                    taxiDesc: "시바공원(프린스 호텔 쪽)으로 가주세요. 도쿄타워 보이는 곳이요."
+                },
+                subway: {
+                    lineName: "오에도선 (자주색 E)",
+                    from: "신주쿠역 (E27)",
+                    to: "아카바네바시역 (E21)",
+                    exit: "아카바네바시 출구",
+                    time: "약 13분 (6정거장)",
+                    desc: "아카바네바시역에서 나오면 도쿄타워가 바로 앞에 보입니다!",
+                    stationGuide: "신주쿠역은 복잡합니다. 지하에서 'Toei Oedo Line(도영 오에도선)' 마크(자주색)만 보고 따라가세요. 개찰구 통과 후 승강장까지 꽤 깊이 내려갑니다."
+                }
+            },
+            ginza: {
+                title: "🛍️ 도쿄타워 → 긴자",
+                type: "taxi",
+                from: "도쿄타워/시바공원 근처",
+                to: "긴자 식스 (GINZA SIX)",
+                time: "약 10~15분",
+                taxiText: "銀座の『GINZA SIX（ギンザシックス）』までお願いします。",
+                taxiPron: "긴자노 긴자 식스 마데 오네가이시마스",
+                taxiDesc: "긴자 식스(GINZA SIX)로 가주세요."
+            },
+            concert: {
+                title: "🎵 긴자 → 공연장 (아리아케)",
+                type: "choice",
+                taxi: {
+                    from: "긴자 시내",
+                    to: "아리아케 가든 (도쿄 가든 시어터)",
+                    time: "약 15~20분",
+                    taxiText: "有明ガーデン（東京ガーデンシアター）までお願いします。",
+                    taxiPron: "아리아케 가-덴 (토쿄 가-덴 시아타-) 마데 오네가이시마스",
+                    taxiDesc: "아리아케 가든(도쿄 가든 시어터)으로 가주세요."
+                },
+                subway: { // 실제로는 버스 안내로 대체
+                    lineName: "도영 버스 [都05-2]",
+                    from: "긴자 4초메 정류장",
+                    to: "아리아케 가든 하차",
+                    exit: "정류장 바로 앞",
+                    time: "약 25분 (앉아서 이동)",
+                    desc: "★강력 추천★ 긴자 한복판에서 타면 공연장 바로 앞에 내려줍니다. 바다 보며 이동!",
+                    stationGuide: "긴자 미츠코시 백화점 건너편(닛산 자동차 전시장 쪽) 버스 정류장을 찾으세요. '아리아케 가든'행 [都05-2] 버스인지 꼭 확인!"
+                }
+            },
+            return: {
+                title: "🌙 공연장 → 신주쿠 (뒷풀이)",
+                type: "choice",
+                taxi: {
+                    from: "공연장 앞 승강장",
+                    to: "신주쿠 오모이데 요코초",
+                    time: "약 30~40분 (비쌈 주의)",
+                    taxiText: "新宿駅西口の『思い出横丁』近くまでお願いします。",
+                    taxiPron: "신주쿠에키 니시구치노 오모이데 요코초 치카쿠 마데 오네가이시마스",
+                    taxiDesc: "신주쿠역 서쪽 출구 '오모이데 요코초' 근처로 가주세요."
+                },
+                subway: {
+                    lineName: "린카이선 (직통)",
+                    from: "국제전시장역 (Kokusai-Tenjijo)",
+                    to: "신주쿠역",
+                    exit: "서쪽 출구",
+                    time: "약 25분 (환승 없음)",
+                    desc: "린카이선(사이쿄선 직통)을 타면 신주쿠까지 한 번에 갑니다. 가장 빠름!",
+                    stationGuide: "공연이 끝나고 '아리아케 가든' 쇼핑몰 2층 연결 통로를 따라가세요. 'Rinkai Line(린카이선)' 표지판을 보고 7-10분 정도 걸으면 역이 나옵니다."
+                }
+            }
+        };
+
+        const ScheduleCard = ({ time, title, iconName, children, isHighlight = false, routeKey = null, onRouteClick }) => {
             const IconComponent = Icons[iconName];
             return (
                 <div className={`relative pl-8 pb-8 border-l-2 ${isHighlight ? 'border-pink-400' : 'border-gray-200'} last:border-l-0`}>
@@ -85,6 +189,24 @@
                         <h3 className={`text-lg font-bold ${isHighlight ? 'text-pink-600' : 'text-gray-800'}`}>{title}</h3>
                         {IconComponent && <IconComponent className={isHighlight ? 'text-pink-500' : 'text-gray-400'} size={18} />}
                     </div>
+                    
+                    {/* 이동 가이드 버튼 */}
+                    {routeKey && (
+                        <button 
+                            onClick={() => onRouteClick(routeKey)}
+                            className="w-full mb-3 flex items-center justify-between bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 text-yellow-800 px-3 py-2 rounded-lg transition-colors group"
+                        >
+                            <span className="text-sm font-bold flex items-center">
+                                {routeData[routeKey].type === 'choice' ? 
+                                    <><Icons.Train size={16} className="mr-1"/> <span className="mr-1">/</span> <Icons.Car size={16} className="mr-2"/></> 
+                                    : <Icons.Car size={16} className="mr-2"/>
+                                }
+                                이동 가이드 보기
+                            </span>
+                            <Icons.ArrowRight size={14} className="text-yellow-600 opacity-50 group-hover:opacity-100 transform group-hover:translate-x-1 transition-all" />
+                        </button>
+                    )}
+
                     <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                         {children}
                     </div>
@@ -92,7 +214,6 @@
             );
         };
 
-        // 상세 정보 카드 컴포넌트
         const DetailCard = ({ image, name, desc, point, link }) => (
             <div className="mb-6 last:mb-0 bg-gray-50 rounded-xl p-3 border border-gray-200">
                 <img 
@@ -119,6 +240,128 @@
 
         const App = () => {
             const [showDinnerOptions, setShowDinnerOptions] = useState(true);
+            const [modalContent, setModalContent] = useState(null);
+            const [activeTab, setActiveTab] = useState('taxi');
+
+            const openRouteModal = (key) => {
+                setModalContent(routeData[key]);
+                setActiveTab('taxi');
+            };
+
+            const closeModal = () => {
+                setModalContent(null);
+            };
+
+            // 선택형 모달 내용 렌더링
+            const renderChoiceContent = () => {
+                if (!modalContent) return null;
+                const { taxi, subway } = modalContent;
+                // 버스일 경우 아이콘 변경
+                const isBus = subway.lineName.includes('버스');
+
+                return (
+                    <div>
+                        {/* 탭 버튼 */}
+                        <div className="flex bg-gray-100 p-1 rounded-lg mb-4">
+                            <button 
+                                onClick={() => setActiveTab('taxi')}
+                                className={`flex-1 flex items-center justify-center py-2 text-sm font-bold rounded-md transition-all ${activeTab === 'taxi' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                <Icons.Car size={16} className="mr-1"/> 택시
+                            </button>
+                            <button 
+                                onClick={() => setActiveTab('subway')}
+                                className={`flex-1 flex items-center justify-center py-2 text-sm font-bold rounded-md transition-all ${activeTab === 'subway' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                {isBus ? <Icons.Bus size={16} className="mr-1"/> : <Icons.Train size={16} className="mr-1"/>}
+                                {isBus ? '버스 (추천!)' : '지하철/전철'}
+                            </button>
+                        </div>
+
+                        {/* 탭 내용 */}
+                        {activeTab === 'taxi' ? (
+                            <>
+                                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 mb-4">
+                                    <div className="flex items-center justify-between text-sm mb-2">
+                                        <span className="bg-gray-200 text-gray-600 px-2 py-0.5 rounded text-xs">출발</span>
+                                        <span className="font-bold text-gray-700 truncate ml-2 flex-1">{taxi.from}</span>
+                                    </div>
+                                    <div className="flex items-center justify-center text-gray-400 my-1"><Icons.ChevronDown size={14}/></div>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded text-xs">도착</span>
+                                        <span className="font-bold text-indigo-700 truncate ml-2 flex-1">{taxi.to}</span>
+                                    </div>
+                                    <p className="text-right text-xs text-gray-400 mt-2">예상 소요시간: {taxi.time}</p>
+                                </div>
+                                <div className="bg-yellow-50 p-4 rounded-xl border-2 border-yellow-300 shadow-sm">
+                                    <p className="text-xs text-yellow-800 font-bold mb-2 flex items-center">
+                                        <span className="bg-yellow-400 text-white px-1.5 rounded mr-1">Tip</span>
+                                        기사님께 이 화면을 보여주세요!
+                                    </p>
+                                    <div className="bg-white p-4 rounded-lg border border-yellow-100 mb-3 text-center">
+                                        <p className="text-xl font-bold text-gray-900 leading-relaxed whitespace-pre-line">
+                                            {taxi.taxiText}
+                                        </p>
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-sm font-bold text-indigo-600 mb-1">🗣️ 한글 발음</p>
+                                        <p className="text-sm text-gray-700 bg-white/50 inline-block px-3 py-1 rounded-full whitespace-pre-line">
+                                            "{taxi.taxiPron}"
+                                        </p>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="space-y-3">
+                                <div className="bg-green-50 p-4 rounded-xl border border-green-200">
+                                    <h4 className="font-bold text-green-800 flex items-center mb-3">
+                                        <Icons.CheckCircle size={18} className="mr-2 text-green-600"/> 추천 이유
+                                    </h4>
+                                    <p className="text-sm text-green-700 bg-white p-2 rounded border border-green-100">
+                                        {subway.desc}
+                                    </p>
+                                </div>
+                                
+                                {/* 📍 탑승 위치 가이드 추가 */}
+                                {subway.stationGuide && (
+                                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 flex items-start">
+                                        <Icons.Navigation size={18} className="text-blue-600 mr-2 mt-0.5 shrink-0" />
+                                        <div>
+                                            <p className="text-xs font-bold text-blue-800 mb-1">📍 정류장/역 찾는 법</p>
+                                            <p className="text-xs text-gray-700 leading-snug">{subway.stationGuide}</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                    <div className="flex items-center mb-3">
+                                        <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded mr-2">노선</span>
+                                        <span className="font-bold text-gray-800">{subway.lineName}</span>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div className="flex relative pl-4 border-l-2 border-green-200">
+                                            <div className="absolute -left-[5px] top-0 w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                                            <div className="ml-2 -mt-1">
+                                                <p className="text-sm font-bold text-gray-800">{subway.from}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex relative pl-4 border-l-2 border-transparent">
+                                            <div className="absolute -left-[5px] top-0 w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                                            <div className="ml-2 -mt-1">
+                                                <p className="text-sm font-bold text-gray-800">{subway.to}</p>
+                                                <p className="text-xs text-gray-500 mt-0.5">{subway.exit}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between text-xs text-gray-500">
+                                        <span>소요시간: {subway.time}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            };
 
             return (
                 <div className="max-w-md mx-auto bg-gray-50 min-h-screen font-sans pb-20 shadow-xl">
@@ -140,7 +383,14 @@
                     <div className="p-6 mt-2">
                         
                         {/* 1. 기상 및 아침 */}
-                        <ScheduleCard time="10:00 - 12:00" title="기상 & 브런치" iconName="Coffee" isHighlight={true}>
+                        <ScheduleCard 
+                            time="10:00 - 12:00" 
+                            title="기상 & 브런치" 
+                            iconName="Coffee" 
+                            isHighlight={true}
+                            routeKey="brunch"
+                            onRouteClick={openRouteModal}
+                        >
                             <div className="mb-3">
                                 <img 
                                     src="https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&q=80&w=400&h=200" 
@@ -150,7 +400,7 @@
                                 <h4 className="text-xl font-bold text-gray-800 mb-1">Cafe Aaliya (카페 알리야)</h4>
                                 <p className="text-sm text-gray-600 leading-relaxed mb-3">
                                     <span className="bg-yellow-100 text-yellow-800 px-1 rounded mr-1 font-bold">Point</span>
-                                    인생 프렌치 토스트! 겉은 바삭하고 속은 푸딩처럼 녹아내리는 극강의 부드러움. 무겁지 않고 달콤하게 하루를 시작하기 딱 좋아 🥞
+                                    인생 프렌치 토스트! 겉은 바삭하고 속은 푸딩처럼 녹아내리는 극강의 부드러움.
                                 </p>
                                 <a 
                                     href="https://www.google.com/maps/place/Cafe+Aaliya/@35.690497,139.7047727,17z/data=!3m1!4b1!4m6!3m5!1s0x60188cdb110f51e5:0x1a011438f4c23010!8m2!3d35.690497!4d139.7047727!16s%2Fg%2F11b778q5jl?entry=ttu&g_ep=EgoyMDI2MDEyNS4wIKXMDSoASAFQAw%3D%3D" 
@@ -164,8 +414,14 @@
                         </ScheduleCard>
 
                         {/* 2. 도쿄타워 */}
-                        <ScheduleCard time="12:00 - 14:00" title="도쿄타워 & 시바공원" iconName="Camera">
-                            <ul className="text-sm text-gray-600 space-y-2">
+                        <ScheduleCard 
+                            time="12:00 - 14:00" 
+                            title="도쿄타워 & 시바공원" 
+                            iconName="Camera"
+                            routeKey="tokyotower"
+                            onRouteClick={openRouteModal}
+                        >
+                            <ul className="text-sm text-gray-600 space-y-2 pointer-events-none">
                                 <li className="flex items-start">
                                     <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-1.5 mr-2 shrink-0" />
                                     <span>🗼 <strong>도쿄타워 뷰 스팟:</strong> 시바공원에서 산책하며 인생샷 남기기</span>
@@ -178,13 +434,19 @@
                         </ScheduleCard>
 
                         {/* 3. 긴자 이동 & 쇼핑 */}
-                        <ScheduleCard time="14:00 - 16:00" title="긴자 이동 & 쇼핑/카페" iconName="Coffee">
+                        <ScheduleCard 
+                            time="14:00 - 16:00" 
+                            title="긴자 이동 & 쇼핑/카페" 
+                            iconName="Coffee"
+                            routeKey="ginza"
+                            onRouteClick={openRouteModal}
+                        >
                             <div className="bg-white rounded-lg border border-gray-100 p-3 mb-2">
                                 <p className="text-sm font-bold text-gray-800 mb-2">🛍️ 쇼핑 스팟</p>
                                 <ul className="text-sm text-gray-600 space-y-3">
                                     <li className="flex flex-col">
                                         <span className="font-bold text-indigo-900">• 긴자 식스 (GINZA SIX)</span>
-                                        <span className="text-xs text-gray-500 pl-2">긴자 최대 쇼핑몰, 옥상 정원과 츠타야 서점이 예뻐!</span>
+                                        <span className="text-xs text-gray-500 pl-2">긴자 최대 쇼핑몰, 옥상 정원과 츠타야 서점.</span>
                                     </li>
                                     <li className="flex flex-col">
                                         <span className="font-bold text-indigo-900">• 도버 스트리트 마켓 긴자</span>
@@ -240,8 +502,14 @@
                         </ScheduleCard>
 
                         {/* 5. 공연장 이동 */}
-                        <ScheduleCard time="17:00 - 18:00" title="공연장 이동" iconName="MapPin">
-                            <div className="bg-indigo-50 p-4 rounded-xl text-sm text-indigo-900 border border-indigo-100">
+                        <ScheduleCard 
+                            time="17:00 - 18:00" 
+                            title="공연장 이동" 
+                            iconName="MapPin"
+                            routeKey="concert"
+                            onRouteClick={openRouteModal}
+                        >
+                            <div className="bg-indigo-50 p-4 rounded-xl text-sm text-indigo-900 border border-indigo-100 pointer-events-none">
                                 <p className="font-bold flex items-center mb-2 text-lg"><Icons.MapPin size={18} className="mr-2 text-indigo-600"/> 긴자 → 아리아케 가든</p>
                                 <div className="space-y-2 bg-white/50 p-3 rounded-lg">
                                     <p className="flex items-center"><span className="bg-indigo-600 text-white px-2 py-0.5 rounded text-xs mr-2">탑승</span> <strong>[都05-2] 버스</strong> (환승 X)</p>
@@ -265,9 +533,15 @@
                         </ScheduleCard>
 
                         {/* 7. 뒷풀이 */}
-                        <ScheduleCard time="22:00 ~" title="뒷풀이 (시부야)" iconName="Coffee">
-                            <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
-                                <h4 className="font-bold text-orange-900 mb-2 flex items-center">🚕 시부야로 이동</h4>
+                        <ScheduleCard 
+                            time="22:00 ~" 
+                            title="뒷풀이 (시부야)" 
+                            iconName="Coffee"
+                            routeKey="return"
+                            onRouteClick={openRouteModal}
+                        >
+                            <div className="bg-orange-50 p-4 rounded-xl border border-orange-100 pointer-events-none">
+                                <h4 className="font-bold text-orange-900 mb-2 flex items-center">🚕 신주쿠로 복귀</h4>
                                 <p className="text-sm text-orange-800 leading-relaxed">
                                     공연의 여운을 즐기며 가볍게 한 잔! 🍻<br/>
                                     <span className="text-xs text-orange-600 mt-1 block">숙소 근처라 마음 편하게 마실 수 있어 :)</span>
@@ -276,6 +550,61 @@
                         </ScheduleCard>
 
                     </div>
+
+                    {/* 이동 경로 및 기사님 보여주기용 모달 */}
+                    <Modal 
+                        isOpen={!!modalContent} 
+                        onClose={closeModal}
+                        title={modalContent?.title}
+                    >
+                        {modalContent && (
+                            <div className="space-y-6">
+                                {/* 선택형 안내 (choice 타입) */}
+                                {modalContent.type === 'choice' ? renderChoiceContent() : null}
+
+                                {/* 택시 상세 안내 (단일 택시 타입) */}
+                                {(modalContent.type === 'taxi' || (modalContent.taxiText && modalContent.type !== 'choice')) && (
+                                    <>
+                                        {/* 경로 요약 */}
+                                        {modalContent.type === 'taxi' && (
+                                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 mb-4">
+                                                <div className="flex items-center justify-between text-sm mb-2">
+                                                    <span className="bg-gray-200 text-gray-600 px-2 py-0.5 rounded text-xs">출발</span>
+                                                    <span className="font-bold text-gray-700 truncate ml-2 flex-1">{modalContent.from}</span>
+                                                </div>
+                                                <div className="flex items-center justify-center text-gray-400 my-1"><Icons.ChevronDown size={14}/></div>
+                                                <div className="flex items-center justify-between text-sm">
+                                                    <span className="bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded text-xs">도착</span>
+                                                    <span className="font-bold text-indigo-700 truncate ml-2 flex-1">{modalContent.to}</span>
+                                                </div>
+                                                <p className="text-right text-xs text-gray-400 mt-2">예상 소요시간: {modalContent.time}</p>
+                                            </div>
+                                        )}
+
+                                        {/* 기사님 보여주기 섹션 */}
+                                        <div className="bg-yellow-50 p-4 rounded-xl border-2 border-yellow-300 shadow-sm">
+                                            <p className="text-xs text-yellow-800 font-bold mb-2 flex items-center">
+                                                <span className="bg-yellow-400 text-white px-1.5 rounded mr-1">Tip</span>
+                                                기사님께 이 화면을 보여주세요!
+                                            </p>
+                                            <div className="bg-white p-4 rounded-lg border border-yellow-100 mb-3 text-center">
+                                                <p className="text-xl font-bold text-gray-900 leading-relaxed whitespace-pre-line">
+                                                    {modalContent.taxiText}
+                                                </p>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-sm font-bold text-indigo-600 mb-1">🗣️ 한글 발음</p>
+                                                <p className="text-sm text-gray-700 bg-white/50 inline-block px-3 py-1 rounded-full whitespace-pre-line">
+                                                    "{modalContent.taxiPron}"
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </Modal>
+
                 </div>
             );
         };
